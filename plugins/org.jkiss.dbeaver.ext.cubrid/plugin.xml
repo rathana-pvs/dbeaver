@@ -210,4 +210,12 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
     </extension>
+    
+    <extension point="org.jkiss.dbeaver.task">
+    	<category id="cubrid" name="CUBRID" description="%task.cubridExportTable.description" icon="icons/cubrid_icon.png"/>
+	    <task id="cubridSQLExport" name="export" description="name" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="cubrid" handler="org.jkiss.dbeaver.ext.cubrid.task.CubridExportHandler" confirmationMessage="%task.cubridExportTable.confirmationMessage">
+	            <datasource id="cubrid"/>
+	            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridUser"/>
+	    </task>
+    </extension>
 </plugin>

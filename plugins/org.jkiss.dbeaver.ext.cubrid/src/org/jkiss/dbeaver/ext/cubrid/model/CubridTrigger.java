@@ -25,8 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
-public class CubridTrigger extends GenericTableTrigger
-{
+public class CubridTrigger extends GenericTableTrigger {
     private String owner;
     private String targetOwner;
     private Double priority;
@@ -36,6 +35,8 @@ public class CubridTrigger extends GenericTableTrigger
     private Integer actionTime;
     private Integer actionType;
     private String actionDefinition;
+    private Integer status;
+    private String targetAttribute;
 
     public CubridTrigger(
             @NotNull GenericTableBase container,
@@ -52,6 +53,8 @@ public class CubridTrigger extends GenericTableTrigger
         this.actionTime = JDBCUtils.safeGetInteger(dbResult, "action_time");
         this.actionType = JDBCUtils.safeGetInteger(dbResult, "action_type");
         this.actionDefinition = JDBCUtils.safeGetString(dbResult, "action_definition");
+        this.targetAttribute = JDBCUtils.safeGetString(dbResult, "target_attribute");
+        this.status = JDBCUtils.safeGetInteger(dbResult, "status");
     }
 
     @NotNull
@@ -63,7 +66,7 @@ public class CubridTrigger extends GenericTableTrigger
     @NotNull
     @Property(viewable = true, order = 3)
     public String getTargetOwner() {
-        return targetOwner == null ? this.getTable().getSchema().getName() : targetOwner ;
+        return targetOwner == null ? this.getTable().getSchema().getName() : targetOwner;
     }
 
     @Nullable
@@ -175,5 +178,21 @@ public class CubridTrigger extends GenericTableTrigger
         } else {
             return "";
         }
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getTargetAttribute() {
+        return targetAttribute;
+    }
+
+    public void setTargetAttribute(String targetAttribute) {
+        this.targetAttribute = targetAttribute;
     }
 }

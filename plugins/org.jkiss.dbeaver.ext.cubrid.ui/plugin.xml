@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+     <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.cubrid.dataSourceWizardView"
+                dataSource="cubrid"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                icon="#database_icon_default">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                icon="#database_icon_default"
+                id="org.jkiss.dbeaver.ext.cubrid.dataSourceEditorView"
+                dataSource="cubrid"
+                label="%dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+    
+    
+  <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+        	<tool
+                description="%tools.cubridExportTable.description"
+                id="org.jkiss.dbeaver.ext.cubrid.ui.tools.CubridExport"
+                label="%tools.cubridExportTable.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png"
+                singleton="false">
+               <task id="cubridSQLExport"/>
+            </tool>
+        </tools>
+         
+    </extension>
+    
+	<extension point="org.jkiss.dbeaver.task.ui">
+        <configurator type="cubridSQLExport" class="org.jkiss.dbeaver.ext.cubrid.tools.CubridTaskConfigurator"/>
+    </extension>
+    
+
+</plugin>

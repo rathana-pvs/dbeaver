@@ -6,8 +6,14 @@ Bundle-Version: 1.0.3.qualifier
 Bundle-Release-Date: 20240325
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ext.generic,
+ org.jkiss.utils,
+ org.jkiss.dbeaver.tasks.native,
+ org.jkiss.dbeaver.registry
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.cubrid
+Export-Package: org.jkiss.dbeaver.ext.cubrid,
+ org.jkiss.dbeaver.ext.cubrid.model,
+ org.jkiss.dbeaver.ext.cubrid.task

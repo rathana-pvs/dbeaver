@@ -12,5 +12,4 @@
     <artifactId>org.jkiss.dbeaver.model</artifactId>
     <version>1.1.20-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
-
 </project>

@@ -118,7 +118,7 @@ public class CubridTable extends GenericTable
         return getParent().getCubridIndexCache().getObjects(monitor, getContainer(), this);
     }
 
-    @SuppressWarnings("unchecked")
+//    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public List<CubridTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
