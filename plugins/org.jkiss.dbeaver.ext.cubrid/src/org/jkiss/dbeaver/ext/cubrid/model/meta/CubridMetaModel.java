@@ -78,7 +78,7 @@ public class CubridMetaModel extends GenericMetaModel
                 while (dbResult.next()) {
                     String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
                     String description = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.COMMENT);
-                    CubridUser user = new CubridUser(dataSource, name, description);
+                    CubridUser user = new CubridUser(dataSource, name, description, dbResult, null);
                     users.add(user);
 	            }
             }
