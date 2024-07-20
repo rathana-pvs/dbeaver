@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -41,7 +42,14 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
             String plan =
                     CubridStatementProxy.getQueryplan(
                             session.getOriginal().createStatement(), query);
-            rootNodes.add(new CubridPlanNode(plan));
+            for(String fullText: plan.split("Join graph segments")) {
+                if(CommonUtils.isNotEmpty(fullText)) {
+                    rootNodes.add(new CubridPlanNode(fullText));
+//                    break;
+                }
+                    
+            }
+            
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }

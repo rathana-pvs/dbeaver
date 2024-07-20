@@ -107,7 +107,7 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
 
-                    List<GenericSchema> cubridUsers = user.getDataSource().getDataSource().getCubridUsers(monitor);
+                    List<GenericSchema> cubridUsers = user.getDataSource().getDataSource().getSchemas();
                     UIUtils.syncExec(
                             () -> {
                                 table.removeAll();

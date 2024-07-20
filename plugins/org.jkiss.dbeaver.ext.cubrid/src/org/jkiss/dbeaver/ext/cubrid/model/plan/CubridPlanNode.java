@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -32,8 +33,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private static final String OPTIONS_SEPARATOR = ":";
     private static final String COST = "cost";
     private static final String CLASS = "class";
-    private static Map<String, String> classNode = new HashMap<>();
-    private static Map<String, String> terms = new HashMap<>();
+    private Map<String, String> classNode;
+    private Map<String, String> terms;
     private String fullText;
     private String nodeName;
     private String name;
@@ -46,13 +47,15 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private List<CubridPlanNode> nested;
 
     public CubridPlanNode(@NotNull String queryPlan) {
-        this(null, null, null, queryPlan);
+        this(null, null, null, null, null, queryPlan);
     }
 
-    private CubridPlanNode(@Nullable CubridPlanNode parent, @Nullable String name, @Nullable List<String> segments, @NotNull String fullText) {
+    private CubridPlanNode(@Nullable CubridPlanNode parent, @Nullable String name, @Nullable List<String> segments, Map<String, String> classNode, Map<String, String> terms,  @NotNull String fullText) {
         this.parent = parent;
         this.name = name;
         this.fullText = fullText;
+        this.classNode = classNode == null ? new HashMap<>() : classNode;
+        this.terms = terms == null ? new HashMap<>() : terms;
         parseObject(parent == null ? this.getSegments() : segments);
         parseNode();
     }
@@ -69,7 +72,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
-        return this.getNameOrTotal(true);
+        String name = this.getNameValue();
+        return name;
     }
 
     @NotNull
@@ -97,7 +101,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @NotNull
     @Property(order = 6, viewable = true)
     public String getTotal() {
-        return this.getNameOrTotal(false);
+        return this.getTotalValue();
     }
 
     @NotNull
@@ -156,7 +160,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         if (nested == null) {
             nested = new ArrayList<>();
         }
-        nested.add(new CubridPlanNode(this, name, value, fullText));
+        nested.add(new CubridPlanNode(this, name, value, classNode, terms, fullText));
     }
 
     private void parseNode() {
@@ -184,7 +188,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 return;
             }
             String key = segments.get(0).split(OPTIONS_SEPARATOR)[0];
-            if (nodeProps.containsKey(key) || removes[0].equals("subplan")) {
+            
+            if (nodeProps.containsKey(key) || Arrays.asList("subplan", "head").contains(removes[0])) {
                 addNested(removes[1].trim(), segments);
                 parseObject(segments);
             } else if (key.equals(CLASS)) {
@@ -196,29 +201,56 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 parseObject(segments);
             }
         }
+//        DBWorkbench.getPlatformUI().showMessageBox(COST, CLASS, false);
     }
 
     @Nullable
     private String getTermExtra(boolean isTerm) {
-        String[] values = terms.get(term).split(" \\(sel");
-        if (isTerm)
-            return values[0].trim();
-        else
-            return "(sel" + values[1].trim();
+        String termValue = terms.get(term);
+        if(CommonUtils.isNotEmpty(termValue)) {
+            String[] values = termValue.split(" \\(sel");
+            if (isTerm)
+                return values[0].trim();
+            else
+                return "(sel" + values[1].trim();
+        }
+        return null;
+        
     }
 
     @Nullable
-    private String getNameOrTotal(boolean isName) {
-        Pattern p;
-        if (isName) {
-            p = Pattern.compile("\\w+ \\w+");
-        } else {
-            p = Pattern.compile("\\w+\\/\\w+");
+    private String getNameValue() {
+        
+        
+//        Pattern p;
+//        if (isName) {
+//            p = Pattern.compile("\\w+ \\w+");
+//        } else {
+//            p = Pattern.compile("\\w+\\/\\w+");
+//        }
+//        Matcher m = p.matcher(classNode.get(nodeName));
+//        if (m.find()) {
+//            return m.group(0);
+//        }
+        String nameValue = classNode.get(nodeName);
+        if(CommonUtils.isNotEmpty(nameValue)){
+            return nameValue.split("\\(")[0];
+            
         }
-        Matcher m = p.matcher(classNode.get(nodeName));
-        if (m.find()) {
-            return m.group(0);
+        return null;
+    }
+    
+    @Nullable
+    private String getTotalValue(){
+        String nodeNameValue = classNode.get(nodeName);
+        if(CommonUtils.isNotEmpty(nodeNameValue)) {
+            Pattern p = Pattern.compile("\\w+\\/\\w+");
+            Matcher m = p.matcher(nodeNameValue);
+            if (m.find()) {
+                return m.group(0);
+            }
         }
+        
         return null;
     }
 
@@ -226,7 +258,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private List<String> getSegments() {
         Pattern pattern =
                 Pattern.compile(
-                        "(inner|outer|class|cost|index|sargs|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
+                        "(inner|outer|class|cost|follow|head|index|sargs|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
         Matcher matcher = pattern.matcher(fullText);
         List<String> segments = new ArrayList<String>();
         while (matcher.find()) {
