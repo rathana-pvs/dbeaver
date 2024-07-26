@@ -201,13 +201,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 
             } else if (key.equals(CLASS) && !removes[0].equals("Query plan")) {
                 addNested(removes[1].trim(), segments);
-                
             }
-            
                 parseObject(segments);
-            
-            
-            
         }
     }
     
