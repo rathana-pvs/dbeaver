@@ -1,4 +1,3 @@
-=======
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2024 DBeaver Corp and others
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 public class CubridUserManager extends SQLObjectEditor<GenericSchema, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/ {
 
+    private static final int MAX_NAME_GEN_ATTEMPTS = 100;
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
@@ -64,12 +65,24 @@ public class CubridUserManager extends SQLObjectEditor<GenericSchema, GenericStr
             @NotNull final Object container,
             @Nullable Object copyFrom,
             @NotNull Map<String, Object> options) {
-        CubridUser user = new CubridUser((CubridDataSource) container, "NEW_USER", null, null, monitor);
+        
+        CubridUser user = new CubridUser((CubridDataSource) container, getNewName((CubridDataSource) container, "NEW_USER"), null, null, monitor);
         if (user.getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase().equals("DBA")) {
             return user;
         } else {
             throw new IllegalArgumentException("Operation add user can only be performed by DBA or a DBA group member.");
         }
+    }
+    
+    private String getNewName(CubridDataSource container, String baseName) {
+        
+        
+        for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
+            String newName = i == 0?baseName: baseName + "_" + i;
+            if(container.getSchema(newName) == null)
+                return newName;
+        }
+        return baseName;
     }
 
     @Override
@@ -80,17 +93,29 @@ public class CubridUserManager extends SQLObjectEditor<GenericSchema, GenericStr
             @NotNull ObjectCreateCommand command,
             @NotNull Map<String, Object> options) {
         CubridUser user = (CubridUser) command.getObject();
-        String sql = "CREATE USER " + user.getName().toUpperCase();
-        if (!CommonUtils.isEmpty(user.getPassword())) {
-            sql += " PASSWORD " + SQLUtils.quoteString(user, user.getPassword());
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE USER " + user.getName().toUpperCase());
+        buildBody(user, builder, command.getProperties());
+        actions.add(new SQLDatabasePersistAction("Create schema", builder.toString()));
+    }
+    
+    private void buildBody(CubridUser user, StringBuilder builder, Map<Object, Object> properties) {
+        for (Object key : properties.keySet()) {
+            switch(key.toString()){
+                case "PASSWORD":
+                    builder.append(" PASSWORD " + SQLUtils.quoteString(user, properties.get(key).toString()));
+                    break;
+                case "GROUPS": 
+                    List<String> groups = (List<String>) properties.get(key);
+                    builder.append(" GROUPS " + String.join(", ", groups));
+                    break;
+                case "DESCRIPTION": 
+                    builder.append(" COMMENT " + SQLUtils.quoteString(user, properties.get(key).toString()));
+                default:
+                    break;
+                
+            }
         }
-        if (!CommonUtils.isEmpty(user.getGroups())) {
-            sql += " GROUPS " + user.getGroups();
-        }
-        if(!CommonUtils.isEmpty(user.getDescription())) {
-            sql += " COMMENT " + SQLUtils.quoteString(user, user.getDescription());
-        }
-        actions.add(new SQLDatabasePersistAction("Create schema", sql));
     }
 
     protected void addObjectModifyActions(

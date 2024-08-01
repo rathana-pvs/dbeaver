@@ -168,8 +168,10 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             if (key.contains(CLASS)) {
                 this.nodeName = nodeProps.get(CLASS).split(" ")[1];
             } else if (key.equals("index")) {
+                String[] values = nodeProps.get(key).split(" ");
                 this.index = nodeProps.get(key).split(" ")[0];
-                this.term = nodeProps.get(key).split(" ")[1];
+                if(values.length == 2)
+                    this.term = nodeProps.get(key).split(" ")[1];
             } else if (key.equals("sargs")) {
                 this.term = nodeProps.get(key);
             } else if (key.equals(COST)) {

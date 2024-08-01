@@ -156,6 +156,11 @@ public class CubridUser extends GenericSchema implements DBPNamedObject2, DBPSav
     public void setGroups(String group) {
         this.group = group;
     }
+    
+    @NotNull
+    public List<String> getRoles(){
+        return groups;
+    }
 
     @NotNull
     public boolean supportsSystemTable() {

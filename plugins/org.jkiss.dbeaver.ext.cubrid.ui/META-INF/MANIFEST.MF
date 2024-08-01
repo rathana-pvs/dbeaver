@@ -1,34 +1,20 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: DBeaver Cubrid UI Plug-in
+Bundle-Name: Cubrid UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.cubrid.ui;singleton:=true
-Bundle-Version: 1.0.80.qualifier
-Bundle-Release-Date: 20230424
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.eclipse.core.expressions,
- org.eclipse.core.filesystem,
- org.eclipse.ui,
- org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext.cubrid,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.model.sql,
+Bundle-Version: 1.0.18.qualifier
+Bundle-Release-Date: 20240708
+Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.data,
- org.jkiss.dbeaver.ui.navigator,
- org.eclipse.jface.text,
- org.eclipse.ui.editors,
- org.jkiss.dbeaver.tasks.ui,
- org.eclipse.ui.ide,
- org.eclipse.ui.workbench.texteditor,
- org.eclipse.swt,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.ui.editors.sql,
+ org.jkiss.dbeaver.ext.dameng,
+ org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ext.generic.ui,
+ org.jkiss.dbeaver.ext.cubrid
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Bundle-Vendor: JKISS
-Bundle-Localization: OSGI-INF/l10n/bundle
-Import-Package: org.jkiss.dbeaver.tasks.nativetool,
- org.jkiss.dbeaver.tasks.ui.nativetool
+Bundle-Vendor: DBeaver Corp
+Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.cubrid.ui

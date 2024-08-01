@@ -53,6 +53,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
+    
+    @Override
+    public boolean canCreateObject(Object container) {
+        return !(container instanceof CubridTable);
+    }
 
     @Nullable
     @Override

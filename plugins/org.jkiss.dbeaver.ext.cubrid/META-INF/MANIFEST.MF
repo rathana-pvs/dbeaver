@@ -12,3 +12,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.cubrid
+Export-Package: org.jkiss.dbeaver.ext.cubrid.model
