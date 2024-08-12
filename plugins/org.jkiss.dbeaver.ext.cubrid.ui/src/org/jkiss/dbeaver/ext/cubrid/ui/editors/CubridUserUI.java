@@ -1,21 +1,33 @@
 package org.jkiss.dbeaver.ext.cubrid.ui.editors;
 
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.colorchooser.ColorSelectionModel;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -32,19 +44,28 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.utils.CommonUtils;
-public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
+public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridPrivilage>{
     
-    private CubridUser user;
+    private CubridPrivilage user;
     private Table table;
     private List<String> groups = new ArrayList<>();
+    private boolean allowEditPassword = false;
     UserPageControl pageControl;
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        // TODO Auto-generated method stub
-        this.refreshUser();
+
         return RefreshResult.REFRESHED;
     }
+    
+    @Override
+    public void init(IEditorSite site, IEditorInput input)
+        throws PartInitException
+    {
+        super.init(site, input);
 
+        
+    }
+    
     @Override
     public void createPartControl(Composite parent) {
         pageControl = new UserPageControl(parent, this);
@@ -64,18 +85,21 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
             GridData gd1 = new GridData();
             gd1.widthHint = 400;
             t.setLayoutData(gd1);
-            if(this.getDatabaseObject().isPersisted()) {
-               t.setEditable(false); 
-            }
+            t.setEditable(!this.getDatabaseObject().isPersisted());
+            
             ControlPropertyCommandListener.create(this, t, CubridUserHandler.NAME);
             
         }
         {
             
+            String loginedUser = user.getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+            allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser);
+            
             Text t = UIUtils.createLabelText(container, "Password ","",  SWT.BORDER | SWT.PASSWORD);
             GridData gd1 = new GridData();
             gd1.widthHint = 400;
             t.setLayoutData(gd1);
+            t.setEditable(allowEditPassword);
             ControlPropertyCommandListener.create(this, t, CubridUserHandler.PASSWORD);
         }
         {
@@ -95,6 +119,31 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
 
             
         }
+        
+//        {
+//            
+//            UIUtils.createControlLabel(container, "Groups", 1);
+//
+//            final ScrolledComposite sc1 =  new ScrolledComposite(container, SWT.BORDER);
+//            sc1.setLayout(new GridLayout(1, false));
+//            
+//            Composite wrapper = new Composite(sc1,SWT.BORDER);
+//            GridData gd = new GridData(GridData.FILL_BOTH);
+//            
+//            wrapper.setLayoutData(gd);
+//            UIUtils.configureScrolledComposite(sc1, wrapper);
+//            
+//            for(int i=0; i<10; i++) {
+////                UIUtils.createCheckbox(c1, "Hello", true);
+//                Button b1 = new Button (wrapper, SWT.PUSH);
+//                b1.setText("first button");
+//            }
+//            sc1.setMinSize(390,  100);
+//            
+//            
+//
+//            
+//        }
         {
           Text t = UIUtils.createLabelText(container, "Description", user.getDescription(), SWT.BORDER|SWT.WRAP|SWT.MULTI|SWT.V_SCROLL);
           GridData gd1 = new GridData(SWT.BEGINNING, SWT.CENTER, true, false);
@@ -103,13 +152,13 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
           
           t.setLayoutData(gd1);
           ControlPropertyCommandListener.create(this, t, CubridUserHandler.DESCRIPTION);
-//          DBUtils.fireObjectUpdate(user);
+
          
       }
         
           
        pageControl.createProgressPanel();
-       DBUtils.fireObjectUpdate(getDatabaseObject(), null, DBPEvent.RENAME);
+       
        
     }
 
@@ -128,27 +177,34 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                List<GenericSchema> cubridUsers = user.getDataSource().getDataSource().getSchemas();
-                UIUtils.syncExec(
-                        () -> {
-                            table.removeAll();
-                            groups.clear();
-                            for (GenericSchema group : cubridUsers) {
-                                if(!group.getName().equals(user.getName())) {
-                                    TableItem item = new TableItem(table, SWT.BREAK);
-                                    item.setImage(DBeaverIcons.getImage(DBIcon.TREE_USER_GROUP));
-                                    item.setText(0, group.getName());
-                                    
-                                    if(user.getRoles().contains(group.getName())) {
-                                        groups.add(group.getName());
-                                        item.setChecked(true);
+                List<CubridPrivilage> cubridUsers;
+                try {
+                    cubridUsers = user.getDataSource().getCubridPrivilages(monitor);
+                
+                    UIUtils.syncExec(
+                            () -> {
+                                table.removeAll();
+                                groups.clear();
+                                for (CubridPrivilage privilage : cubridUsers) {
+                                    if(!privilage.getName().equals(user.getName())) {
+                                        TableItem item = new TableItem(table, SWT.BREAK);
+                                        item.setImage(DBeaverIcons.getImage(DBIcon.TREE_USER_GROUP));
+                                        item.setText(0, privilage.getName());
                                         
+                                        if(user.getRoles().contains(privilage.getName())) {
+                                            groups.add(privilage.getName());
+                                            item.setChecked(true);
+                                            
+                                        }
                                     }
+                                   
                                 }
-                               
-                            }
                             
                         });
+                } catch (DBException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 return Status.OK_STATUS;
             }
         }.schedule();
@@ -202,7 +258,7 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
         final private Table widget;
         final private CubridUserHandler handler;
         private List<String> values;
-        private DBECommandProperty<CubridUser> command;
+        private DBECommandProperty<CubridPrivilage> command;
         private List<String> oldValue;
         
         public TableCommandListener(CubridUserUI editor, Table widget, CubridUserHandler handler, List<String> oldValue){
@@ -235,15 +291,15 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
                         }
                         
                         
-                        DBECommandReflector<CubridUser, DBECommandProperty<CubridUser>> commandReflector = new DBECommandReflector<CubridUser, DBECommandProperty<CubridUser>>() {
+                        DBECommandReflector<CubridPrivilage, DBECommandProperty<CubridPrivilage>> commandReflector = new DBECommandReflector<CubridPrivilage, DBECommandProperty<CubridPrivilage>>() {
 
                             @Override
-                            public void redoCommand(DBECommandProperty<CubridUser> command) {
+                            public void redoCommand(DBECommandProperty<CubridPrivilage> command) {
                                 
                             }
 
                             @Override
-                            public void undoCommand(DBECommandProperty<CubridUser> cp) {
+                            public void undoCommand(DBECommandProperty<CubridPrivilage> cp) {
                                
                                editor.loadGroups();
                                values = new ArrayList<String>(oldValue);
@@ -254,7 +310,7 @@ public class CubridUserUI  extends AbstractDatabaseObjectEditor<CubridUser>{
                         
                         if (command == null) {
                             if (!CommonUtils.equalObjects(values, oldValue)) {
-                                command = new DBECommandProperty<CubridUser>(editor.getDatabaseObject(), handler, oldValue, values);
+                                command = new DBECommandProperty<CubridPrivilage>(editor.getDatabaseObject(), handler, oldValue, values);
                                 editor.addChangeCommand(command, commandReflector);
                             }
                         } else {

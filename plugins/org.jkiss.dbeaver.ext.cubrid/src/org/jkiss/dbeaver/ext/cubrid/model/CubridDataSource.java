@@ -49,6 +49,7 @@ public class CubridDataSource extends GenericDataSource
     private final CubridMetaModel metaModel;
     private boolean supportMultiSchema;
     private final CubridServerCache serverCache;
+    private final CubridPrivilageCache privilageCache;
     private ArrayList<CubridCharset> charsets;
     private Map<String, CubridCollation> collations;
 
@@ -60,6 +61,7 @@ public class CubridDataSource extends GenericDataSource
         super(monitor, container, metaModel, new CubridSQLDialect());
         this.metaModel = new CubridMetaModel();
         this.serverCache = new CubridServerCache();
+        this.privilageCache = new CubridPrivilageCache();
     }
 
     @DPIContainer
@@ -72,6 +74,11 @@ public class CubridDataSource extends GenericDataSource
     @NotNull
     public List<GenericSchema> getCubridUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return this.getSchemas();
+    }
+    
+    @NotNull
+    public List<CubridPrivilage> getCubridPrivilages(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return privilageCache.getAllObjects(monitor, this);
     }
 
     @Nullable
@@ -149,6 +156,11 @@ public class CubridDataSource extends GenericDataSource
         }
         return null;
     }
+    
+    @NotNull
+    public CubridPrivilageCache getCubridPrivilageCache() {
+        return privilageCache;
+    }
 
     @NotNull
     public ArrayList<String> getCollations() {
@@ -204,6 +216,7 @@ public class CubridDataSource extends GenericDataSource
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         serverCache.clearCache();
+        privilageCache.clearCache();
         return this;
     }
 
@@ -235,6 +248,30 @@ public class CubridDataSource extends GenericDataSource
                 @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
             return new CubridServer(container, dbResult);
+        }
+    }
+    
+    public class CubridPrivilageCache extends JDBCObjectCache<CubridDataSource, CubridPrivilage> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(
+                @NotNull JDBCSession session,
+                @NotNull CubridDataSource container)
+                throws SQLException {
+            String sql = "select * from db_user";
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected CubridPrivilage fetchObject(
+                @NotNull JDBCSession session,
+                @NotNull CubridDataSource container,
+                @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException {
+            String name = JDBCUtils.safeGetString(dbResult, "name");
+            return new CubridPrivilage(container,name, dbResult);
         }
     }
 

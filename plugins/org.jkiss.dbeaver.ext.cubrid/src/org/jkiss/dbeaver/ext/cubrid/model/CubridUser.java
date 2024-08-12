@@ -16,6 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,29 +47,15 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 public class CubridUser extends GenericSchema implements DBPNamedObject2, DBPSaveableObject
 {
     private String name;
-    private String description;
-    private String password;
     private boolean persisted;
-    private String group;
-    private List<String> allGroups = new ArrayList<>();
-    private List<String> groups = new ArrayList<>();
     private final CubridIndexCache cubridIndexCache;
-    private List<GenericSchema> groupRefs;
-
     public CubridUser(
             @NotNull GenericDataSource dataSource,
             @NotNull String schemaName,
@@ -72,34 +64,23 @@ public class CubridUser extends GenericSchema implements DBPNamedObject2, DBPSav
             DBRProgressMonitor monitor) {
         super(dataSource, null, schemaName);
         this.name = schemaName;
-        this.description = description;
         this.persisted = dbResult != null;
         this.cubridIndexCache = new CubridIndexCache(this.getTableCache());
 
-        if(dbResult != null) {
-            String sql = "select t.groups.name from db_user join table(groups) as t(groups) where name = ?";
-            try (JDBCPreparedStatement dbStat = dbResult.getSession().prepareStatement(sql)) {
-                dbStat.setString(1, name);
-                try (JDBCResultSet result = dbStat.executeQuery()) {
-                    while (result.next()) {
-                        groups.add(JDBCUtils.safeGetString(result, "groups.name"));
-                    }
-                    group = String.join(", ", groups);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            this.groupRefs = ((CubridDataSource) dataSource).getCubridUsers(monitor);
-        } catch (DBException e) {
-            e.printStackTrace();
-        }
-        for (GenericSchema col : CommonUtils.safeCollection(groupRefs)) {
-            this.allGroups.add(col.getName());
-        }
+        
     }
 
+
+
+    @NotNull
+    @Property(viewable = true, order = 1)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
     @NotNull
     @Override
     public boolean isPersisted() {
@@ -110,57 +91,7 @@ public class CubridUser extends GenericSchema implements DBPNamedObject2, DBPSav
     public void setPersisted(@NotNull boolean persisted) {
         this.persisted = persisted;
     }
-
-    @NotNull
-    @Property(viewable = true, editable = true, order = 1)
-    public String getName() {
-        return name;
-    }
-
-    public void setName(@NotNull String name) {
-        this.name = name;
-    }
-
-    @NotNull
-    public boolean isPasswordEditable() {
-        String currentUser = getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
-        return currentUser.equals("DBA") || currentUser.equals(getName().toUpperCase());
-    }
-
-    @Nullable
-    @Property(viewable = true, order = 2, editable = true, updatableExpr = "object.passwordEditable")
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(@Nullable String newPassword) {
-        this.password = newPassword;
-    }
-
-    @Nullable
-    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 10, editable = true, updatable = true)
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(@Nullable String description) {
-        this.description = description;
-    }
-
-    @Nullable
-    @Property(viewable = true, order = 4, editable = true)
-    public String getGroups() {
-        return group;
-    }
-
-    public void setGroups(String group) {
-        this.group = group;
-    }
-    
-    @NotNull
-    public List<String> getRoles(){
-        return groups;
-    }
+   
 
     @NotNull
     public boolean supportsSystemTable() {

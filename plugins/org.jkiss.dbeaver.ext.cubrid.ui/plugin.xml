@@ -22,11 +22,15 @@
         <editor
             id="org.jkiss.dbeaver.ext.cubrid.ui.editors.CubridUserUI"
             class="org.jkiss.dbeaver.ext.cubrid.ui.editors.CubridUserUI"
-            objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridUser"
+            objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"
             main="true"
             label="%editor.general.name"
             description="General user settings"
             icon="#user">
         </editor>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridUserManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"/>
     </extension>
 </plugin>
