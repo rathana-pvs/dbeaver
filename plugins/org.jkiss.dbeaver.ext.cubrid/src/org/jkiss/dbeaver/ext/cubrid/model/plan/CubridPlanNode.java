@@ -226,7 +226,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             else {
                 value = terms.get(this.term);
                 if(CommonUtils.isNotEmpty(value)) {
-                    return value.split(" \\(sel")[0];
+                    return value.split(" \\(sel ")[0];
                 }
             }
         }
@@ -284,7 +284,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     private List<String> getSegments() {
         Pattern pattern =
                 Pattern.compile(
-                        "(inner|outer|class|cost|follow|head|index|sargs|edge|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
+                        "(inner|outer|class|cost|follow|head|subplan|index|sargs|edge|Query plan|term\\[..|node\\[..):\\s*([^\\n\\r]*)");
         Matcher matcher = pattern.matcher(fullText);
         List<String> segments = new ArrayList<String>();
         while (matcher.find()) {
