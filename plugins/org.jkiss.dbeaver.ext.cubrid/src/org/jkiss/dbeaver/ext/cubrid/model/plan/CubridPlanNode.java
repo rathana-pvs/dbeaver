@@ -194,7 +194,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 return;
             } 
             String key = segments.get(0).split(OPTIONS_SEPARATOR)[0];
-            if(segments.size() == 1 && removes[0].contains("sargs")) {
+            if((segments.size() == 1 || nodeProps.containsKey("index")) && removes[0].contains("sargs")) {
                 nodeProps.remove(removes[0]);
                 addNested(removes[0], new ArrayList<String>(Arrays.asList(String.join(":", removes))));
                 
