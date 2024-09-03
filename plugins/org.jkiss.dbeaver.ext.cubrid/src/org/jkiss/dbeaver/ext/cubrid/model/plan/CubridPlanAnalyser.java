@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
-    private List<CubridPlanNode> rootNodes = new ArrayList<>();
+    private List<CubridPlanNodeNew> rootNodes = new ArrayList<>();
     private String queryPlan;
     private String query;
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
@@ -45,7 +45,7 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
             this.queryPlan = plan;
             for(String fullText: plan.split("Join graph segments")) {
                 if(CommonUtils.isNotEmpty(fullText)) {
-                    rootNodes.add(new CubridPlanNode(fullText));
+                    rootNodes.add(new CubridPlanNodeNew(fullText));
 //                    break;
                 }
                     
