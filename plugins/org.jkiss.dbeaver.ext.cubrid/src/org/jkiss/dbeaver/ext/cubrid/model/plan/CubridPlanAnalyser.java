@@ -32,9 +32,10 @@ import java.util.Map;
 
 public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
-    private List<CubridPlanNodeNew> rootNodes = new ArrayList<>();
+    private List<CubridPlanNode> rootNodes = new ArrayList<>();
     private String queryPlan;
     private String query;
+    private static final String SPLIT_QUERY= "Join graph segments";
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
             throws DBCException {
         this.query = query;
@@ -43,10 +44,9 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
                     CubridStatementProxy.getQueryplan(
                             session.getOriginal().createStatement(), query);
             this.queryPlan = plan;
-            for(String fullText: plan.split("Join graph segments")) {
-                if(CommonUtils.isNotEmpty(fullText)) {
-                    rootNodes.add(new CubridPlanNodeNew(fullText));
-//                    break;
+            for (String fullText: plan.split(SPLIT_QUERY)) {
+                if (CommonUtils.isNotEmpty(fullText)) {
+                    rootNodes.add(new CubridPlanNode(String.format("%s%s", SPLIT_QUERY, fullText)));
                 }
                     
             }
