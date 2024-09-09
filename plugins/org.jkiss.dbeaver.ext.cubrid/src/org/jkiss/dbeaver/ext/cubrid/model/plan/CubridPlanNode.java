@@ -224,9 +224,11 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                     index = indexes[0];
                     extra = this.getExtraValue(indexes[0]);
                     if (indexes.length > 1) {
+                        if(!subNode(this, key, value)) {
+                            term = this.getTermValue(indexes[1]);
+                            extra = this.getExtraValue(indexes[1]);
+                        }
                         
-                        term = this.getTermValue(indexes[1]);
-                        extra = this.getExtraValue(indexes[1]);
                     }
                     break;
                 case "class":
@@ -250,11 +252,8 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                     break;
                 }
             } else if ("sargs".equals(key)) {
-                if(subNode(this, key, value)) {
-                    continue;
-                }else if (!name.equals("sscan")) {
+                if (!subNode(this, key, value) && !name.equals("sscan")) {
                     addNested("single", null);
-                    
                 }else {
                     term = this.getTermValue(value);
                     extra = this.getExtraValue(value);
@@ -262,9 +261,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
 
             }else if("edge".equals(key)) {
                 
-                if(subNode(parent, key, value)) {
-                    continue;
-                }else if(parent.name.equals("follow")) {
+                if(!subNode(parent, key, value) && parent.name.equals("follow")) {
                     parent.extra = this.getTermValue(value);
                 
                 }else if(!parent.name.startsWith("nl-join")) {
@@ -284,13 +281,16 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         }
     }
     
-    private boolean subNode(CubridPlanNode node, String key, String value) {
-        String[] values = value.split("AND");
-        
-        if(values.length > 1) {
-            for(int index =0; index <values.length; index++) {
-                node.addNested("multiple", String.format("%s %s:%s", key, index + 1, values[index]));
-            }                
+    private boolean subNode(CubridPlanNode node, String key, String value) {        
+        if(value.contains(" AND ")) {
+            String regex = "term\\[\\d\\]";
+            Pattern p = Pattern.compile(regex);
+            Matcher m = p.matcher(value);
+            int count = 1;
+            while (m.find()) {               
+                node.addNested("multiple", String.format("%s %s:%s", key, count , m.group()));
+                count++;
+            }
             return true;
         }
         return false;
@@ -376,22 +376,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         }
         this.name = segments.get(0).split(OPTIONS_SEPARATOR)[1].trim();
         return segments;
-    }
-    
-    private void splitSargs(String segment) {
-        String[] values = segment.split(OPTIONS_SEPARATOR);
-        if(singleNode.contains(values[0])){
-            String[] sargs = values[1].split("AND");
-            if(sargs.length > 1) {
-                for(String sarg: sargs) {
-                    segments.add(String.format("%s:%s", values[0], sarg));
-                }
-            }else {
-                segments.add(segment);
-            }
-        }else {
-            segments.add(segment);
-        }
     }
 
 }
