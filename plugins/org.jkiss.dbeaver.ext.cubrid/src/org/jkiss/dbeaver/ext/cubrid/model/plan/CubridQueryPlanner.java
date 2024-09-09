@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -42,8 +45,9 @@ public class CubridQueryPlanner implements DBCQueryPlanner {
         final SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
-        if (!"SELECT".equalsIgnoreCase(firstKeyword) && !"WITH".equalsIgnoreCase(firstKeyword)) {
-            throw new DBCException("Only SELECT statements could produce execution plan");
+        List<String> supportStatement = List.of("SELECT", "WITH", "PREPARE", "VALUES");
+        if (!supportStatement.contains(firstKeyword.toUpperCase())) {
+            throw new DBCException("Only SELECT, WITH, and PREPARE statements could produce execution plan");
         }
         return new CubridPlanAnalyser(session, query);
     }

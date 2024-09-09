@@ -44,12 +44,21 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
                     CubridStatementProxy.getQueryplan(
                             session.getOriginal().createStatement(), query);
             this.queryPlan = plan;
+            List<CubridPlanNode> tempNode = new ArrayList<>();
+            CubridPlanNode parent = new CubridPlanNode();
+            long totalCost = 0;
             for (String fullText: plan.split(SPLIT_QUERY)) {
                 if (CommonUtils.isNotEmpty(fullText)) {
-                    rootNodes.add(new CubridPlanNode(String.format("%s%s", SPLIT_QUERY, fullText)));
-                }
+                    CubridPlanNode node = new CubridPlanNode(String.format("%s%s", SPLIT_QUERY, fullText));
+                    totalCost = totalCost + node.getCost();
+                    tempNode.add(node);
                     
+                }
             }
+            parent.setAllNestedNode(tempNode);
+            parent.setCost(totalCost);
+            rootNodes.add(parent);
+            
             
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
