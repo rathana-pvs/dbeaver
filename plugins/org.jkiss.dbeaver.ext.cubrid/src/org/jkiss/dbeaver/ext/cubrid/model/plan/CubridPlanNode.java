@@ -30,8 +30,13 @@ import java.util.regex.Pattern;
 
 public class CubridPlanNode extends AbstractExecutionPlanNode
 {
-    private static final String OPTIONS_SEPARATOR = ":";
+    private static final String SEPARATOR = ":";
+    private static final String SPACE = " ";
+    private static final String NORMAL = "normal";
+    private static final String SINGLE = "single";
+    private static final String MULTIPLE = "multiple";
     private static final String SARGS = "sargs";
+    
     private static Map<String, String> classNode = new HashMap<>();
     private static Map<String, String> terms = new HashMap<>();
     private static int i;
@@ -69,17 +74,17 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         this.fullText = parent.fullText;
         
         switch(type) {
-            case "normal":
+            case NORMAL:
                 parsObject();
                 break;
-            case "single":
-                String[] values = segments.get(i - 1).split(":");
+            case SINGLE:
+                String[] values = segments.get(i - 1).split(SEPARATOR);
                 name = values[0];
                 term = this.getTermValue(values[1].trim());
                 extra = this.getExtraValue(values[1].trim());
                 break;
-            case "multiple":
-                String[] parmas = param.split(":");
+            case MULTIPLE:
+                String[] parmas = param.split(SEPARATOR);
                 name = parmas[0];
                 term = this.getTermValue(parmas[1].trim());
                 extra = this.getExtraValue(parmas[1].trim());
@@ -198,11 +203,11 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     }
 
     void parsNode() {
-        addNested("normal", null);
+        addNested(NORMAL, null);
         while (i < segments.size()) {
-            String key = segments.get(i).split(":")[0];
+            String key = segments.get(i).split(SEPARATOR)[0];
             if (parentNode.contains(key)) {
-                addNested("normal", null);
+                addNested(NORMAL, null);
             } else {
                 parsObject();
                 break;
@@ -214,13 +219,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     void parsObject() {
 
         while (i < segments.size()) {
-            String[] values = segments.get(i).split(":");
+            String[] values = segments.get(i).split(SEPARATOR);
             String key = values[0].trim();
             String value = values[1].trim();
             i++;
             switch (key) {
                 case "index":
-                    String[] indexes = value.split(" ");
+                    String[] indexes = value.split(SPACE);
                     index = indexes[0];
                     extra = this.getExtraValue(indexes[0]);
                     if (indexes.length > 1) {
@@ -237,12 +242,6 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 case "sort":
                     if(!parentExcept.contains(name))
                         extra = String.format("(sort %s)", value);
-//                case "edge":
-//                    if (parent.name.equals("follow")) {
-//                        parent.extra = this.getTermValue(value);
-//                    } else {
-//                        parent.term = this.getTermValue(value);
-//                    }
 
             }
             if (parentNode.contains(key)) {
@@ -253,7 +252,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 }
             } else if ("sargs".equals(key)) {
                 if (!subNode(this, key, value) && !name.equals("sscan")) {
-                    addNested("single", null);
+                    addNested(SINGLE, null);
                 }else {
                     term = this.getTermValue(value);
                     extra = this.getExtraValue(value);
@@ -265,13 +264,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                     parent.extra = this.getTermValue(value);
                 
                 }else if(!parent.name.startsWith("nl-join")) {
-                    parent.addNested("single", null);
+                    parent.addNested(SINGLE, null);
                 }else {
                     parent.term = this.getTermValue(value);
                     parent.extra = this.getExtraValue(value);
                 }
             }else if ("filtr".equals(key)) {
-                addNested("single", null);
+                addNested(SINGLE, null);
             } else if (key.contains("cost")) {
                 String[] costs = value.split(" card ");
                 this.cost = Long.parseLong(costs[0]);
@@ -288,7 +287,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
             Matcher m = p.matcher(value);
             int count = 1;
             while (m.find()) {               
-                node.addNested("multiple", String.format("%s %s:%s", key, count , m.group()));
+                node.addNested(MULTIPLE, String.format("%s %s:%s", key, count , m.group()));
                 count++;
             }
             return true;
@@ -330,14 +329,14 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     @Nullable
     private void getNameValue(String value) {
 
-        String[] values = value.split(" ");
+        String[] values = value.split(SPACE);
         String nameValue = classNode.get(values[values.length - 1]);
         if (CommonUtils.isNotEmpty(nameValue)) {
             String temName = nameValue.split("\\(")[0];
             
             // make a unique name
-            Set<String> setName = new LinkedHashSet<String>(Arrays.asList(temName.split(" ")));
-            nodeName = String.join(" ", setName);
+            Set<String> setName = new LinkedHashSet<String>(Arrays.asList(temName.split(SPACE)));
+            nodeName = String.join(SPACE, setName);
             
             this.getTotalValue(nameValue);
         }
@@ -365,7 +364,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         while (matcher.find()) {
             String segment = matcher.group().trim();
             if (segment.startsWith("node")) {
-                String[] values = segment.split(OPTIONS_SEPARATOR);
+                String[] values = segment.split(SEPARATOR);
                 classNode.put(values[0], values[1]);
             } else if (segment.startsWith("term")) {
                 String[] values = segment.split("]: ");
@@ -374,7 +373,7 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
                 segments.add(segment);
             }
         }
-        this.name = segments.get(0).split(OPTIONS_SEPARATOR)[1].trim();
+        this.name = segments.get(0).split(SEPARATOR)[1].trim();
         return segments;
     }
 
