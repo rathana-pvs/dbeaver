@@ -11,7 +11,9 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.ui,
- org.jkiss.dbeaver.ext.cubrid
+ org.jkiss.dbeaver.ext.cubrid,
+ org.eclipse.osgi,
+ org.eclipse.jface
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

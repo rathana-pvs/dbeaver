@@ -46,7 +46,7 @@ import java.util.Locale;
 public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageResultSetPresentationGrid.class);
 
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.grid"; //$NON-NLS-1$
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.grid1"; //$NON-NLS-1$
 
     private Button gridShowOddRows;
     private Button gridHighlightRowsWithSelectedCells;

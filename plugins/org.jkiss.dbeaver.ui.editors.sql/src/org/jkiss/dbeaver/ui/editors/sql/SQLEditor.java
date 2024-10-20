@@ -1223,7 +1223,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public boolean isMultipleResultsPerTabEnabled() {
-        return CommonUtils.toBoolean(multipleResultsPerTabProperty.getPropertyValue(this).value, false);
+        return CommonUtils.toBoolean(multipleResultsPerTabProperty.getPropertyValue(this).value);
     }
 
     /**
