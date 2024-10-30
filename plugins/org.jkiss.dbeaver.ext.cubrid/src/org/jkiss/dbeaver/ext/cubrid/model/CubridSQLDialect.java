@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -77,7 +78,7 @@ public class CubridSQLDialect extends GenericSQLDialect
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
-        
+        this.setTracking(session);
         for(String removeKeyWord: REMOVE_KEYWORD) {
             this.removeSQLKeyword(removeKeyWord);
         }
@@ -96,6 +97,16 @@ public class CubridSQLDialect extends GenericSQLDialect
             log.error("Can't get database version", e);
         }
         return false;
+    }
+    
+    public void setTracking(@NotNull JDBCSession session) {
+    	 try {
+    		 JDBCPreparedStatement st = session.prepareStatement("SET TRACE ON;");
+    		 st.execute();
+         } catch (SQLException e) {
+             log.error("Can't set trace", e);
+         }
+         
     }
 
     @NotNull

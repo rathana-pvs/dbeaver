@@ -25,6 +25,12 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -261,5 +267,32 @@ public class CubridTable extends GenericTable
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.charset.getCollations().toArray();
         }
+    }
+    
+    @NotNull
+    @Override
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        @Nullable DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize
+    ) throws DBCException {
+    	DBCStatistics st = super.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
+    	try {
+			final JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement("SHOW TRACE;");
+			JDBCResultSet dbResult = dbStat.executeQuery();
+			if(dbResult.next()) {
+				Object s = dbResult.getObject(0);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return st;
+    	
     }
 }

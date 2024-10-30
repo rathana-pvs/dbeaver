@@ -284,5 +284,9 @@ public class CubridDataSource extends GenericDataSource
     public boolean splitProceduresAndFunctions() {
         return true;
     }
+    
+    public void updateStatistic() {
+    	
+    }
 
 }
