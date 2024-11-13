@@ -62,7 +62,7 @@ public class CubridInfoStistic extends AbstractPresentation {
       
       this.planPanel = new CustomSashForm(control, SWT.VERTICAL);
       this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-      this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+//      this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
       final GridLayout gl = new GridLayout(1, false);
       gl.marginWidth = 0;
       gl.marginHeight = 0;
@@ -112,16 +112,6 @@ public class CubridInfoStistic extends AbstractPresentation {
         if(st != null) {
         	table.removeAll();
         	this.readStatistic(st.getQueryText());
-//        	ObjectMapper objectMapper = new ObjectMapper();
-//        	Map<String, Object> map = objectMapper
-//        		      .convertValue(st, new TypeReference<Map<String, Object>>() {});
-//        	for(String key : map.keySet()) {
-//        		TableItem item = new TableItem(table, SWT.LEFT);
-//        		item.setText(0, key);
-//        		if(map.get(key) != null)
-//        			item.setText(1, map.get(key).toString());	
-//        	}
-        	TableItem query = new TableItem(table, SWT.LEFT);
         	TableItem queryText = new TableItem(table, SWT.LEFT);
         	TableItem updatedRow = new TableItem(table, SWT.LEFT);
         	TableItem executeTime = new TableItem(table, SWT.LEFT);
@@ -129,9 +119,7 @@ public class CubridInfoStistic extends AbstractPresentation {
         	TableItem totalTime = new TableItem(table, SWT.LEFT);
         	TableItem startTime = new TableItem(table, SWT.LEFT);
         	TableItem finishTime = new TableItem(table, SWT.LEFT);
-        	
-        	query.setText(0, "Queries");
-        	query.setText(1, String.valueOf(st.getStatementsCount()));
+
         	
         	queryText.setText(0, "Query Text");
         	queryText.setText(1, st.getQueryText());

@@ -285,8 +285,5 @@ public class CubridDataSource extends GenericDataSource
         return true;
     }
     
-    public void updateStatistic() {
-    	
-    }
 
 }
