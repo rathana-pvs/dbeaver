@@ -821,11 +821,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 return ErrorType.UNIQUE_KEY_VIOLATION;
             }
         }
-        if (GeneralUtils.getRootCause(error) instanceof SocketException) {
+        if (CommonUtils.getRootCause(error) instanceof SocketException) {
             return ErrorType.CONNECTION_LOST;
         }
         if (error instanceof DBCConnectException) {
-            Throwable rootCause = GeneralUtils.getRootCause(error);
+            Throwable rootCause = CommonUtils.getRootCause(error);
             if (rootCause instanceof ClassNotFoundException) {
                 // Looks like bad driver configuration
                 return ErrorType.DRIVER_CLASS_MISSING;
@@ -857,7 +857,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     /////////////////////////////////////////////////
-    // DBDFormatSettings
+    // Canceling
 
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {
@@ -871,6 +871,16 @@ public abstract class JDBCDataSource extends AbstractDataSource
             throw new DBDatabaseException(e, this);
         }
     }
+
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        if (connectionThread != null) {
+            connectionThread.interrupt();
+        }
+        return true;
+    }
+
+    /////////////////////////////////////////////////
+    // Certs
 
     protected String saveCertificateToFile(String rootCertProp) throws IOException {
         Path certPath = Files.createTempFile(
