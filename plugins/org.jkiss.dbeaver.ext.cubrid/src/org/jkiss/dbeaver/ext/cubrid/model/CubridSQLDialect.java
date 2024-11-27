@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -100,12 +102,16 @@ public class CubridSQLDialect extends GenericSQLDialect
     }
     
     public void setTracking(@NotNull JDBCSession session) {
-    	 try {
-    		 JDBCPreparedStatement st = session.prepareStatement("SET TRACE ON;");
-    		 st.execute();
-         } catch (SQLException e) {
-             log.error("Can't set trace", e);
-         }
+    	DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+    	if(preferenceStore.getBoolean("show")) {
+    		try {
+       		 JDBCPreparedStatement st = session.prepareStatement("SET TRACE ON;");
+       		 st.execute();
+            } catch (SQLException e) {
+                log.error("Can't set trace", e);
+            }
+    	}
+    	 
          
     }
 

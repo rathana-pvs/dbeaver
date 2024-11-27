@@ -92,7 +92,7 @@ public class CubridInfoStistic extends AbstractPresentation {
         UIUtils.createTableColumn(table, SWT.LEFT, "Name");
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
 
-        UIUtils.setControlContextMenu(table, manager -> UIUtils.fillDefaultTableContextMenu(manager, table));
+//        UIUtils.setControlContextMenu(table, manager -> UIUtils.fillDefaultTableContextMenu(manager, table));
         
         plainText = new Text(this.planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
     	
