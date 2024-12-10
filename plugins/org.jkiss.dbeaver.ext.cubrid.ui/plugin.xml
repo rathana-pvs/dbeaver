@@ -44,6 +44,15 @@
         </page>
     </extension>
      
+     <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.cubrid.general" class="org.jkiss.dbeaver.ext.cubrid.ui.views.PrefPageCubrid" name="%page.org.jkiss.dbeaver.preferences.cubrid.main.name">
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                    <test property="org.jkiss.dbeaver.core.datasourceContainer.driverId" value="cubrid_thin"/>
+                </adapt>
+            </enabledWhen>
+        </page>
+    </extension>
     
     
     

@@ -77,7 +77,7 @@ public class PrefPageCubrid extends TargetPrefPage
 		
 		PrefUtils.savePreferenceStore(store);
 		
-		this.enableTracking(showStatistic.getSelection());
+//		this.enableTracking(showStatistic.getSelection());
 		
 	}
 
@@ -118,37 +118,38 @@ public class PrefPageCubrid extends TargetPrefPage
 		return composite;
 	}
 	
-	 private void enableTracking(boolean enabled) {
-////		 SQLDialectMetadata d = DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect("cubrid");
-//		try {
-//			CubridSQLDialect c =  (CubridSQLDialect) d.createInstance();
-//			
-//		} catch (DBException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		 String sql = enabled ? "SET TRACE ON" : "OFF";
-    	 new AbstractJob("Enable Tracking")
-         {
-    		 @Override
-    			protected IStatus run(DBRProgressMonitor monitor) {
-    			
-    			 UIUtils.syncExec(
-                         () -> {
-                        	 try (JDBCSession session = DBUtils.openMetaSession(monitor, null, "Read Statistic")) {
-                        		 JDBCPreparedStatement st = session.prepareStatement(sql);
-                        		 st.execute();
-                        		 
-                 		        } catch (SQLException | DBCException e) {
-                 		            
-                 		        }
-                             });
-                        	 
-                       
-    			 return Status.OK_STATUS;
-	 }
-         }.schedule();
-	 }
+//	 private void enableTracking(boolean enabled) {
+//////		 SQLDialectMetadata d = DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect("cubrid");
+////		try {
+////			CubridSQLDialect c =  (CubridSQLDialect) d.createInstance();
+////			
+////		} catch (DBException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+////		}
+//		 
+//		 String sql = enabled ? "SET TRACE ON" : "OFF";
+//    	 new AbstractJob("Enable Tracking")
+//         {
+//    		 @Override
+//    			protected IStatus run(DBRProgressMonitor monitor) {
+//    			
+//    			 UIUtils.syncExec(
+//                         () -> {
+//                        	 try (JDBCSession session = DBUtils.openMetaSession(monitor, null, "Read Statistic")) {
+//                        		 JDBCPreparedStatement st = session.prepareStatement(sql);
+//                        		 st.execute();
+//                        		 
+//                 		        } catch (SQLException | DBCException e) {
+//                 		            
+//                 		        }
+//                             });
+//                        	 
+//                       
+//    			 return Status.OK_STATUS;
+//	 }
+//         }.schedule();
+//	 }
 	 }
 	 
     			 
