@@ -20,3 +20,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.cubrid.ui
+Export-Package: org.jkiss.dbeaver.ext.cubrid.ui.internal

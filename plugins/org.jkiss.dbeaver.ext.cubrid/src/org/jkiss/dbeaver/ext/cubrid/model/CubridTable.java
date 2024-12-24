@@ -269,30 +269,4 @@ public class CubridTable extends GenericTable
         }
     }
     
-    @NotNull
-    @Override
-    public DBCStatistics readData(
-        @Nullable DBCExecutionSource source,
-        @NotNull DBCSession session,
-        @NotNull DBDDataReceiver dataReceiver,
-        @Nullable DBDDataFilter dataFilter,
-        long firstRow,
-        long maxRows,
-        long flags,
-        int fetchSize
-    ) throws DBCException {
-    	DBCStatistics st = super.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
-    	try {
-			final JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement("SHOW TRACE;");
-			JDBCResultSet dbResult = dbStat.executeQuery();
-			if(dbResult.next()) {
-				Object s = dbResult.getObject(0);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return st;
-    	
-    }
 }
