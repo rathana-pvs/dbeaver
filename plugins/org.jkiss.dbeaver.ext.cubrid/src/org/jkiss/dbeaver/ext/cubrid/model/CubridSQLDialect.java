@@ -18,11 +18,16 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -78,7 +83,7 @@ public class CubridSQLDialect extends GenericSQLDialect
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
         source.setEOLVersion(isEOLVersion(session));
-
+        this.setTracking(session);
         for(String removeKeyWord: REMOVE_KEYWORD) {
             this.removeSQLKeyword(removeKeyWord);
         }
@@ -116,5 +121,21 @@ public class CubridSQLDialect extends GenericSQLDialect
     @Override
     public int getSchemaUsage() {
         return SQLDialect.USAGE_ALL;
+    }
+    
+    private void setTracking(@NotNull JDBCSession session) {
+    	DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+		try {
+
+		JDBCStatement st =  session.createStatement();
+
+		if(store.getBoolean(CubridConstants.STATISTIC_TRACE))
+			st.execute("SET TRACE ON;");
+		if(!CommonUtils.isEmpty(store.getString(CubridConstants.STATISTIC)))
+			st.execute("set @collect_exec_stats = 1");
+        } catch (SQLException e) {
+            log.error("Can't set trace", e);
+        }
     }
 }
