@@ -23,13 +23,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -37,7 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/
+public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> 
 {
 
     @Override
@@ -93,7 +98,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         StringBuilder builder = new StringBuilder();
         builder.append("DROP USER ");
         builder.append(DBUtils.getQuotedIdentifier(command.getObject()));
-        actions.add(new SQLDatabasePersistAction("Drop User", builder.toString()));
+        actions.add(new DeletePersistAction(command.getObject(), builder.toString()));
     }
 
     private void buildBody(CubridPrivilage user, StringBuilder builder, Map<Object, Object> properties) {
@@ -124,6 +129,27 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         return user.getName();
 
     }
+    
+    private class DeletePersistAction extends SQLDatabasePersistActionAtomic{
+    	CubridPrivilage database;
+	public DeletePersistAction(CubridPrivilage privilage, String script) {
+		super("drop user", script);
+		this.database = privilage;
+		
+	}
+	
+	@Override
+    public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+		super.afterExecute(session, error);
+		if(error == null) {
+			GenericSchema user =  this.database.getParentObject().getSchema(database.getName());
+			DBUtils.fireObjectRemove(null);
+		}
+	}
 
+		
+    	
+    }
+  
 
 }

@@ -38,10 +38,12 @@ import org.jkiss.dbeaver.ext.cubrid.ui.config.CubridPrivilageHandler;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.IRefreshablePart.RefreshResult;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
@@ -54,10 +56,30 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
     private CubridPrivilage user;
     private Table table;
     private List<String> groups = new ArrayList<>();
+    private Text name;
+    private boolean loaded;
+    
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        return RefreshResult.REFRESHED;
+        if (force || !loaded || (source instanceof DBNEvent && ((DBNEvent) source).getAction() == DBNEvent.Action.UPDATE)) {
+            loaded = false;
+            activatePart();
+            return RefreshResult.REFRESHED;
+        }
+        return RefreshResult.IGNORED;
+    }
+    
+    @Override
+    public void activatePart() {
+    	if (loaded) {
+            return;
+        }
+    	if(getDatabaseObject().isPersisted()) {
+    		name.setEditable(false);
+    		table.setEnabled(false);
+    	}
+    	loaded = true;
     }
 
     @Override
@@ -70,12 +92,11 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
         {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 30;
-            Text t = UIUtils.createLabelText(container, "Name ", user.getName(), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            name = UIUtils.createLabelText(container, "Name ", user.getName(), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             GridData gd1 = new GridData();
             gd1.widthHint = 400;
-            t.setLayoutData(gd1);
-            t.setEditable(!this.getDatabaseObject().isPersisted());
-            ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.NAME);
+            name.setLayoutData(gd1);
+            ControlPropertyCommandListener.create(this, name, CubridPrivilageHandler.NAME);
         }
         {
             String loginedUser = user.getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
@@ -96,9 +117,6 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
             table.setLayoutData(gd);
             loadGroups();
             new TableCommandListener(this, table, CubridPrivilageHandler.GROUPS, groups);
-            if (getDatabaseObject().isPersisted()) {
-                table.setEnabled(false);
-            }
         }
         {
             Text t = UIUtils.createLabelText(container, "Description", user.getDescription(), SWT.BORDER | SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
@@ -108,7 +126,9 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
             t.setLayoutData(gd1);
             ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.DESCRIPTION);
         }
+        activatePart();
         pageControl.createProgressPanel();
+        loaded = true;
     }
 
     @Override
@@ -142,11 +162,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
                                         if (user.getRoles().contains(privilage.getName())) {
                                             groups.add(privilage.getName());
                                             item.setChecked(true);
-
-
                                         }
-
-
                                     }
 
                                 }
