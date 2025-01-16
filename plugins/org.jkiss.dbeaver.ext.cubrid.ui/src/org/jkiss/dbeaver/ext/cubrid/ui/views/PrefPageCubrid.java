@@ -60,11 +60,8 @@ public class PrefPageCubrid extends TargetPrefPage
 	@Override
 	protected void loadPreferences(DBPPreferenceStore store) {
 		trace.setSelection(store.getBoolean(CubridConstants.STATISTIC_TRACE));
-		if(store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_INFO)) {
-			info.setSelection(true);
-		}else if(store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_ALL_INFO)) {
-			allInfo.setSelection(true);
-		}
+		info.setSelection(store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_INFO));
+		allInfo.setSelection(store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_ALL_INFO));
 	}
 
 	@Override
