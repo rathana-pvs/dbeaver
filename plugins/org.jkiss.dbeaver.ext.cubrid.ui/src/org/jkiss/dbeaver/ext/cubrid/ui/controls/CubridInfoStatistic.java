@@ -72,7 +72,6 @@ public class CubridInfoStatistic extends AbstractPresentation
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.planPanel = new CustomSashForm(control, SWT.VERTICAL);
         this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-//      this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         final GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
@@ -104,8 +103,6 @@ public class CubridInfoStatistic extends AbstractPresentation
             statisticInfo = new Text(this.planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
             statisticInfo.setText(String.format(CubridMessages.statistic_instruction_message, CubridMessages.statistic_info + "|" + CubridMessages.statistic_all_info));
         }
-//        UIUtils.setControlContextMenu(table, manager -> UIUtils.fillDefaultTableContextMenu(manager, table));
-
         plainText = new Text(this.planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
         plainText.setText(String.format(CubridMessages.statistic_instruction_message, CubridMessages.statistic_trace_info));
         this.readStatistic(controller.getContainer().toString());
