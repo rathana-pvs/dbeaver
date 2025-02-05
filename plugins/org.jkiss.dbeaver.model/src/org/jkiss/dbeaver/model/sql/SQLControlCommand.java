@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
  * SQL control command
@@ -39,7 +40,10 @@ public class SQLControlCommand implements SQLScriptElement {
         this.dataSource = dataSource;
 
         this.text = text;
-        if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
+        final String multilineCommandPrefix = syntaxManager.getControlCommandPrefix().repeat(2);
+        if (text.startsWith(multilineCommandPrefix)) {
+            text = text.substring(multilineCommandPrefix.length(), text.length() - multilineCommandPrefix.length());
+        } else if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
             text = text.substring(syntaxManager.getControlCommandPrefix().length());
         }
         int divPos = -1;
@@ -57,6 +61,10 @@ public class SQLControlCommand implements SQLScriptElement {
         this.emptyCommand = emptyCommand;
 
         this.commandId = commandId == null ? command : commandId;
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {
@@ -120,4 +128,5 @@ public class SQLControlCommand implements SQLScriptElement {
     public String toString() {
         return text;
     }
+
 }

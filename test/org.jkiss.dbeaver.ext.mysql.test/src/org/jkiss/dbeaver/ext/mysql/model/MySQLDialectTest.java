@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MySQLDialectTest {
+public class MySQLDialectTest extends DBeaverUnitTest {
 
     private final MySQLDialect dialect = new MySQLDialect();
 

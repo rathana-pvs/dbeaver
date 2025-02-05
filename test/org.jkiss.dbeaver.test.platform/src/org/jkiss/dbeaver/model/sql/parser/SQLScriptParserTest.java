@@ -34,13 +34,12 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,8 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SQLScriptParserTest {
+public class SQLScriptParserTest extends DBeaverUnitTest {
     @Mock
     private JDBCDataSource dataSource;
     @Mock
@@ -526,7 +524,25 @@ public class SQLScriptParserTest {
         SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
         Assert.assertEquals("@set col1 = '1'", element.getText());
     }
-    
+
+    @Test
+    public void parseMultilineCommandFromCursorPosition() throws DBException {
+        String query = """
+            @@set var1 = 'I have a long text for
+            multiple lines'@@
+            
+            SELECT var1 FROM dual;""";
+        String expected = """
+            @@set var1 = 'I have a long text for
+            multiple lines'@@""";
+        SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        var positions = List.of(0, 1, 2, 5, 12, 25, 36, 52, 53, 54);
+        for (var pos : positions) {
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
+            Assert.assertEquals(expected, element.getText());
+        }
+    }
+
     @Test
     public void parseOracleQStringRule() throws DBException {
         final List<String> qstrings = List.of(

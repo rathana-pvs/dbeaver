@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -1228,14 +1227,37 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image, @Nullable SelectionListener selectionListener)
-    {
+    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image, @Nullable SelectionListener selectionListener) {
         Button button = new Button(parent, SWT.PUSH);
         if (label != null) {
             button.setText(label);
         }
         if (image != null) {
             button.setImage(image);
+        }
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        return button;
+    }
+
+    @NotNull
+    public static Button createPushButton(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String toolTip,
+        @Nullable DBPImage image,
+        @Nullable SelectionListener selectionListener
+    ) {
+        Button button = new Button(parent, SWT.PUSH);
+        if (label != null) {
+            button.setText(label);
+        }
+        if (toolTip != null) {
+            button.setToolTipText(toolTip);
+        }
+        if (image != null) {
+            button.setImage(DBeaverIcons.getImage(image));
         }
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
@@ -2302,7 +2324,7 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
+        return BaseThemeSettings.instance.monospaceFont;
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
@@ -2359,26 +2381,6 @@ public class UIUtils {
         }
     }
 
-    public static void installAndUpdateMainFont(@NotNull Control control) {
-        final IPropertyChangeListener listener = event -> {
-            if (event.getProperty().equals(UIFonts.DBEAVER_FONTS_MAIN_FONT)) {
-                applyMainFont(control);
-            }
-        };
-
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
-        control.addDisposeListener(e -> PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener));
-
-        applyMainFont(control);
-    }
-
-    public static void applyMainFont(@Nullable Control control) {
-        if (control == null || control.isDisposed() || mainFontIsDefault()) {
-            return;
-        }
-        applyMainFont(control, JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
-    }
-
     @Nullable
     public static Text recreateTextControl(@Nullable Text original, int style) {
         if (original == null || original.getStyle() == style) {
@@ -2417,7 +2419,27 @@ public class UIUtils {
         }
     }
 
-    private static void applyMainFont(@NotNull Control control, @NotNull Font font) {
+    public static void installAndUpdateMainFont(@NotNull Control control) {
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            s -> applyMainFont(control),
+            control
+        );
+
+        //applyMainFont(control);
+    }
+
+    public static void applyMainFont(@Nullable Control control) {
+        applyMainFont(control, BaseThemeSettings.instance.baseFont);
+    }
+
+    public static void applyMainFont(@Nullable Control control, @NotNull Font font) {
+        if (control == null || control.isDisposed() || mainFontIsDefault()) {
+            return;
+        }
+        if (control instanceof Composite comp) {
+            comp.layout();
+        }
         control.setFont(font);
 
         if (control instanceof Composite) {
@@ -2500,10 +2522,12 @@ public class UIUtils {
             boolean showSchema = true;
             if (checkChangePossibility) {
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
-                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                if (defaultContext != null) {
+                    DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+                        showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                    }
                 }
             }
 
