@@ -35,15 +35,13 @@ public class CubridInfoPanel implements IResultSetPanel
     private static final Log log = Log.getLog(CubridInfoPanel.class);
     private Table table;
     private Composite control;
-    private SashForm planPanel;
     private Text plainText;
     private Text statisticInfo;
     private IResultSetPresentation presentation;
 
     @Override
     public void contributeActions(IContributionManager manager) {
-
-
+        // not implemented
     }
 
     @Override
@@ -52,12 +50,12 @@ public class CubridInfoPanel implements IResultSetPanel
         this.presentation = presentation;
         control = UIUtils.createPlaceholder(parent, 1);
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
-        this.planPanel = new CustomSashForm(control, SWT.VERTICAL);
-        this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        SashForm planPanel = new CustomSashForm(control, SWT.VERTICAL);
+        planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         final GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
-        this.planPanel.setLayout(gl);
+        planPanel.setLayout(gl);
         if (!CommonUtils.isEmpty(store.getString(CubridConstants.STATISTIC))) {
             table = new Table(planPanel, SWT.MULTI | SWT.FULL_SELECTION);
             table.setLinesVisible(!UIStyles.isDarkTheme());
@@ -67,10 +65,10 @@ public class CubridInfoPanel implements IResultSetPanel
             UIUtils.createTableColumn(table, SWT.LEFT, "Name");
             UIUtils.createTableColumn(table, SWT.LEFT, "Value");
         } else {
-            statisticInfo = new Text(this.planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
+            statisticInfo = new Text(planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
             statisticInfo.setText(String.format(CubridMessages.statistic_instruction_message, CubridMessages.statistic_info + "|" + CubridMessages.statistic_all_info));
         }
-        plainText = new Text(this.planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
+        plainText = new Text(planPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
         plainText.setText(String.format(CubridMessages.statistic_instruction_message, CubridMessages.statistic_trace_info));
         return control;
     }
