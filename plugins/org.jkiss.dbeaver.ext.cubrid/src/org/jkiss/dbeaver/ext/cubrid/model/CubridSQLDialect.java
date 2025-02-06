@@ -132,10 +132,6 @@ public class CubridSQLDialect extends GenericSQLDialect
                 st.execute("set @collect_exec_stats = 1");
         } catch (SQLException e) {
             log.error("Can't set trace", e);
-        } finally {
-            if (st != null) {
-                st.close();
-            }
         }
     }
 }
