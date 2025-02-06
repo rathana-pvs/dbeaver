@@ -43,7 +43,6 @@ public class PrefPageCubrid extends TargetPrefPage
     private Button allInfo;
 
     public PrefPageCubrid() {
-        super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
     }
 
