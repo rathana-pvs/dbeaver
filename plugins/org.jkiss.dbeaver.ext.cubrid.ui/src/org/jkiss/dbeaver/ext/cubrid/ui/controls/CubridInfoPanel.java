@@ -8,6 +8,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
@@ -102,14 +103,26 @@ public class CubridInfoPanel implements IResultSetPanel
 
     }
 
+    @Nullable
+    private String getStatisticQuery() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_INFO)) {
+            return "show exec statistics;";
+        } else if (store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_ALL_INFO)) {
+            return "show exec statistics all;";
+        }
+        return null;
+    }
+
     private void showStatistic(JDBCStatement stm, String queryInfo) throws SQLException {
         table.removeAll();
         stm.execute(this.presentation.getController().getContainer().toString());
-        JDBCResultSet resultSet = stm.executeQuery(queryInfo);
-        while (resultSet.next()) {
-            TableItem item = new TableItem(table, SWT.LEFT);
-            item.setText(0, resultSet.getString("variable"));
-            item.setText(1, resultSet.getString("value"));
+        try (JDBCResultSet resultSet = stm.executeQuery(queryInfo)) {
+            while (resultSet.next()) {
+                TableItem item = new TableItem(table, SWT.LEFT);
+                item.setText(0, resultSet.getString("variable"));
+                item.setText(1, resultSet.getString("value"));
+            }
         }
         UIUtils.packColumns(table);
     }
@@ -124,22 +137,21 @@ public class CubridInfoPanel implements IResultSetPanel
                 UIUtils.syncExec(
                         () -> {
                             try (JDBCSession session = DBUtils.openMetaSession(monitor, presentation.getController().getDataContainer().getDataSource(), "Read Statistic")) {
-                                JDBCStatement stm = session.createStatement();
-                                if (store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_INFO)) {
-                                    showStatistic(stm, "show exec statistics;");
-                                } else if (store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_ALL_INFO)) {
-                                    showStatistic(stm, "show exec statistics all;");
-                                }
-                                if (store.getBoolean(CubridConstants.STATISTIC_TRACE)) {
-                                    stm.execute(presentation.getController().getContainer().toString());
-                                    JDBCResultSet resultSet = stm.executeQuery("show trace;");
-                                    if (resultSet.next()) {
-                                        String st = resultSet.getString("trace");
-                                        plainText.setText(st);
+                                try (JDBCStatement stm = session.createStatement()) {
+                                    String statisticQuery = getStatisticQuery();
+                                    if (CommonUtils.isNotEmpty(statisticQuery)) {
+                                        showStatistic(stm, statisticQuery);
+                                    }
+                                    if (store.getBoolean(CubridConstants.STATISTIC_TRACE)) {
+                                        stm.execute(presentation.getController().getContainer().toString());
+                                        try (JDBCResultSet resultSet = stm.executeQuery("show trace;")) {
+                                            if (resultSet.next()) {
+                                                String st = resultSet.getString("trace");
+                                                plainText.setText(st);
+                                            }
+                                        }
                                     }
                                 }
-
-
                             } catch (SQLException | DBCException e) {
                                 log.error("could not read statistic", e);
                             }
@@ -148,6 +160,5 @@ public class CubridInfoPanel implements IResultSetPanel
             }
         }.schedule();
     }
-
 
 }
