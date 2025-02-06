@@ -125,11 +125,7 @@ public class CubridSQLDialect extends GenericSQLDialect
 
     private void setTracking(@NotNull JDBCSession session) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        JDBCStatement st = null;
-        try {
-
-            st = session.createStatement();
-
+        try (JDBCStatement st = session.createStatement()) {
             if (store.getBoolean(CubridConstants.STATISTIC_TRACE))
                 st.execute("SET TRACE ON;");
             if (!CommonUtils.isEmpty(store.getString(CubridConstants.STATISTIC)))
